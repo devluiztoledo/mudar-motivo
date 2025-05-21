@@ -11,7 +11,7 @@
 
 ---
 
-# 📄 Script Tampermonkey – Contar Suporte Técnico
+# 📄 Script Tampermonkey – Mudar motivo INT6
 
 Este repositório contém um **script para Tampermonkey** que agiliza a alteração do motivo do atendimento no sistema **Integrator 6 da EliteSoft**.
 
