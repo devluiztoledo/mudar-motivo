@@ -19,7 +19,7 @@ Este repositório contém um **script para Tampermonkey** que agiliza a alteraç
 
 ## ⚙️ O que o script faz?
 
--Adiciona alguns botões para mudar o motivo do atendimento de maneira mais ágil
+Adiciona alguns botões para mudar o motivo do atendimento de maneira mais ágil
 
 ---
 
