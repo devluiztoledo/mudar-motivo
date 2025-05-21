@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      2.0
 // @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6, seleciona o motivo correto e clica em Salvar automaticamente.
 // @author       Você
 // @match        *://integrator6.gegnet.com.br/*
@@ -14,14 +14,12 @@
 (function () {
     'use strict';
 
-
     const motivos = {
-        "Lentidão": "SUP - Lentidão",
-        "Sem acesso": "SUP - Sem conexão/Indisponibilidade",
-        "Massiva": "SUP - Massiva",
+        "Lentidão":      "SUP - Lentidão",
+        "Sem acesso":    "SUP - Sem conexão/Indisponibilidade",
+        "Massiva":       "SUP - Massiva",
         "Alterar senha": "SUP - Troca /informações senha Wifi"
     };
-
 
     function criarBotao(nome, motivoLabel) {
         const btn = document.createElement('button');
@@ -45,10 +43,25 @@
             await esperar(300);
 
 
-            const itemMotivo = [...document.querySelectorAll('span.ui-menuitem-text')]
-                .find(span => span.innerText.trim() === 'Motivo');
-            if (!itemMotivo) return alert('Item Motivo não encontrado');
-            itemMotivo.click();
+            const catMenuItem = [...document.querySelectorAll('li.ui-menuitem')]
+                .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Categoria');
+            if (!catMenuItem) return alert('Item Categoria não encontrado');
+
+            catMenuItem.querySelector('a.ui-menuitem-link').click();
+            await esperar(300);
+
+
+            const tecnicoItem = [...catMenuItem.querySelectorAll('p-menubarsub ul.ui-submenu-list li.ui-menuitem')]
+                .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Técnico');
+            if (!tecnicoItem) return alert('Categoria "Técnico" não encontrada');
+            tecnicoItem.querySelector('a.ui-menuitem-link').click();
+            await esperar(300);
+
+
+            const motivoMenuItem = [...document.querySelectorAll('li.ui-menuitem')]
+                .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Motivo');
+            if (!motivoMenuItem) return alert('Item Motivo não encontrado');
+            motivoMenuItem.querySelector('a.ui-menuitem-link').click();
             await esperar(300);
 
 
@@ -56,12 +69,10 @@
             if (!dropdownTrigger) return alert('Dropdown de motivo não encontrado');
             dropdownTrigger.click();
             await esperar(300);
-
-
-            const itens = [...document.querySelectorAll('.ui-dropdown-item')];
-            const escolha = itens.find(el => el.innerText.trim() === motivoLabel);
-            if (!escolha) return alert(`Motivo "${motivoLabel}" não encontrado no dropdown`);
-            escolha.click();
+            const escolhaMot = [...document.querySelectorAll('.ui-dropdown-item')]
+                .find(el => el.innerText.trim() === motivoLabel);
+            if (!escolhaMot) return alert(`Motivo "${motivoLabel}" não encontrado`);
+            escolhaMot.click();
             await esperar(300);
 
 
@@ -72,7 +83,6 @@
 
         return btn;
     }
-
 
     function inserirBotoes() {
         const motivoCampo = document.querySelector('input[formcontrolname="descri_mvis"]');
@@ -86,11 +96,9 @@
             container.appendChild(criarBotao(nome, label));
         }
 
-
         motivoCampo.parentElement.prepend(container);
     }
 
-
-    const observer = new MutationObserver(inserirBotoes);
-    observer.observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(inserirBotoes)
+        .observe(document.body, { childList: true, subtree: true });
 })();
