@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.5
 // @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6, seleciona o motivo correto e clica em Salvar automaticamente.
 // @author       Você
 // @match        *://integrator6.gegnet.com.br/*
@@ -241,34 +241,31 @@ Cliente possui um total de 0 atendimentos nos ultimos 3 meses
         btn.style.cursor = 'pointer';
 
         btn.onclick = async () => {
-            
-            if (templates[nome]) {
-                navigator.clipboard.writeText(templates[nome]);
-            }
-
-            
-            const inputMotivo = document.querySelector('input[formcontrolname="descri_mvis"]');
-            const atual = inputMotivo?.value?.trim();
-            if (atual === motivoLabel) {
-                return;
-            }
-
             const esperar = ms => new Promise(r => setTimeout(r, ms));
 
-            
-            const btnMudar = [...document.querySelectorAll('a.ui-menuitem-link')]
+
+            if (templates[nome]) {
+                await navigator.clipboard.writeText(templates[nome]);
+            }
+
+            const inputMotivo = document.querySelector('input[formcontrolname="descri_mvis"]');
+            const atual = inputMotivo?.value?.trim();
+
+
+
+            const btnMudar = Array.from(document.querySelectorAll('a.ui-menuitem-link'))
                 .find(a => a.innerText.trim() === 'Mudar');
             if (!btnMudar) return;
             btnMudar.click();
             await esperar(300);
 
-            
-            const catItem = [...document.querySelectorAll('li.ui-menuitem')]
+
+            const catItem = Array.from(document.querySelectorAll('li.ui-menuitem'))
                 .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Categoria');
             if (catItem) {
                 catItem.querySelector('a.ui-menuitem-link').click();
                 await esperar(300);
-                const tecnico = [...catItem.querySelectorAll('p-menubarsub ul.ui-submenu-list li.ui-menuitem')]
+                const tecnico = Array.from(catItem.querySelectorAll('p-menubarsub ul.ui-submenu-list li.ui-menuitem'))
                     .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Técnico');
                 if (tecnico) {
                     tecnico.querySelector('a.ui-menuitem-link').click();
@@ -276,26 +273,27 @@ Cliente possui um total de 0 atendimentos nos ultimos 3 meses
                 }
             }
 
-            
-            const motItem = [...document.querySelectorAll('li.ui-menuitem')]
-                .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Motivo');
-            if (!motItem) return;
-            motItem.querySelector('a.ui-menuitem-link').click();
-            await esperar(300);
 
-            
-            const trg = document.querySelector('.ui-dropdown-trigger');
-            if (!trg) return;
-            trg.click();
-            await esperar(300);
-            const escolha = [...document.querySelectorAll('.ui-dropdown-item')]
-                .find(el => el.innerText.trim() === motivoLabel);
-            if (escolha) {
-                escolha.click();
-                await esperar(300);
+            if (atual !== motivoLabel) {
+                const motItem = Array.from(document.querySelectorAll('li.ui-menuitem'))
+                    .find(li => li.querySelector('span.ui-menuitem-text')?.innerText.trim() === 'Motivo');
+                if (motItem) {
+                    motItem.querySelector('a.ui-menuitem-link').click();
+                    await esperar(300);
+                    const trg = document.querySelector('.ui-dropdown-trigger');
+                    if (trg) {
+                        trg.click();
+                        await esperar(300);
+                        const escolha = Array.from(document.querySelectorAll('.ui-dropdown-item'))
+                            .find(el => el.innerText.trim() === motivoLabel);
+                        if (escolha) {
+                            escolha.click();
+                            await esperar(300);
+                        }
+                    }
+                }
             }
 
-            
             const btnSalvar = document.querySelector('div.modal-footer button.btn-success');
             if (btnSalvar) {
                 btnSalvar.click();
@@ -313,9 +311,9 @@ Cliente possui um total de 0 atendimentos nos ultimos 3 meses
         container.id = 'btn-alterar-motivo';
         container.style.margin = '15px 0';
 
-        for (const [nome, label] of Object.entries(motivos)) {
+        Object.entries(motivos).forEach(([nome, label]) => {
             container.appendChild(criarBotao(nome, label));
-        }
+        });
 
         motivoCampo.parentElement.prepend(container);
     }
