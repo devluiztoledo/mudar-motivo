@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      3.5
+// @version      4.0
 // @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6, seleciona o motivo correto e clica em Salvar automaticamente.
 // @author       Você
 // @match        *://integrator6.gegnet.com.br/*
@@ -320,4 +320,106 @@ Cliente possui um total de 0 atendimentos nos ultimos 3 meses
 
     new MutationObserver(inserirBotoes)
         .observe(document.body, { childList: true, subtree: true });
+})();
+
+(function() {
+    'use strict';
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    function clickSpan(text) {
+        const el = Array.from(document.querySelectorAll('span.ng-star-inserted'))
+            .find(e => e.textContent.trim() === text);
+        if (el) el.click();
+        else console.warn(`span '${text}' não encontrado`);
+    }
+
+    async function selectDropdown(formcontrolname, optionLabel) {
+        const dropdown = document.querySelector(`p-dropdown[formcontrolname="${formcontrolname}"]`);
+        if (!dropdown) return console.warn(`dropdown ${formcontrolname} não encontrado`);
+        const trigger = dropdown.querySelector('.ui-dropdown-trigger');
+        if (!trigger) return console.warn(`trigger ${formcontrolname} não encontrado`);
+        trigger.click();
+        await delay(300);
+        const item = Array.from(document.querySelectorAll('li.ui-dropdown-item'))
+            .find(li => li.getAttribute('aria-label') === optionLabel);
+        if (item) item.click();
+        else console.warn(`item '${optionLabel}' no ${formcontrolname} não encontrado`);
+        await delay(200);
+    }
+
+    const flows = {
+        semAcessoSuporte: async () => {
+            clickSpan('SUPORTE TÉCNICO RESIDENCIAL');
+            await delay(100);
+            clickSpan('SUPORTE TÉCNICO - PF');
+            await delay(300);
+            await selectDropdown('codcatoco', 'Técnico');
+            await selectDropdown('codmvis', 'SUP - Sem conexão/Indisponibilidade');
+        },
+        semAcessoDigital: async () => {
+            clickSpan('SUPORTE TÉCNICO RESIDENCIAL');
+            await delay(100);
+            clickSpan('SUPORTE TÉCNICO - PF');
+            await delay(300);
+            await selectDropdown('codcatoco', 'Técnico');
+            await selectDropdown('codmvis', 'SUP - Sem conexão/Indisponibilidade');
+            await selectDropdown('user_cargo', 'CSA - Digital');
+        },
+        lentidaoSuporte: async () => {
+            clickSpan('SUPORTE TÉCNICO RESIDENCIAL');
+            await delay(100);
+            clickSpan('SUPORTE TÉCNICO - PF');
+            await delay(300);
+            await selectDropdown('codcatoco', 'Técnico');
+            await selectDropdown('codmvis', 'SUP - Lentidão');
+        },
+        lentidaoDigital: async () => {
+            clickSpan('SUPORTE TÉCNICO RESIDENCIAL');
+            await delay(100);
+            clickSpan('SUPORTE TÉCNICO - PF');
+            await delay(300);
+            await selectDropdown('codcatoco', 'Técnico');
+            await selectDropdown('codmvis', 'SUP - Lentidão');
+            await selectDropdown('user_cargo', 'CSA - Digital');
+        },
+        senhaWifi: async () => {
+            clickSpan('SUPORTE TÉCNICO RESIDENCIAL');
+            await delay(100);
+            clickSpan('SUPORTE TÉCNICO - PF');
+            await delay(300);
+            await selectDropdown('codcatoco', 'Técnico');
+            await selectDropdown('codmvis', 'SUP - Troca /informações senha Wifi');
+            await selectDropdown('user_cargo', 'CSA - Digital');
+        }
+    };
+
+    function createPanel() {
+        const container = document.querySelector('div.box-formulario');
+        if (!container || document.getElementById('tm-panel')) return;
+        const panel = document.createElement('div');
+        panel.id = 'tm-panel';
+        panel.style.cssText = 'margin:10px 0; padding:4px 0; border:none; display:flex; flex-wrap:wrap; gap:8px';
+
+        Object.entries({
+            'Sem Acesso Suporte':'semAcessoSuporte',
+            'Sem Acesso Digital':'semAcessoDigital',
+            'Lentidão Suporte':'lentidaoSuporte',
+            'Lentidão Digital':'lentidaoDigital',
+            'Senha Wi-Fi':'senhaWifi'
+        }).forEach(([label, key]) => {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.className = 'btn btn-primary';
+            btn.style.fontSize = '13px';
+            btn.style.padding = '4px 10px';
+            btn.addEventListener('click', flows[key]);
+            panel.appendChild(btn);
+        });
+        container.prepend(panel);
+    }
+
+    new MutationObserver(createPanel).observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('hashchange', () => setTimeout(createPanel, 300));
+    setTimeout(createPanel, 500);
 })();
