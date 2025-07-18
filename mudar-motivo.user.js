@@ -1,11 +1,14 @@
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      6.0
+// @version      6.1
 // @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6
-// @author       Você
+// @author       Luiz Toledo
 // @match        *://integrator6.gegnet.com.br/*
 // @grant        none
+// @icon         https://raw.githubusercontent.com/devluiztoledo/copiar-dados-ONT/main/icon.png
+// @updateURL    https://raw.githubusercontent.com/devluiztoledo/mudar-motivo/main/mudar-motivo.user.js
+// @downloadURL  https://raw.githubusercontent.com/devluiztoledo/mudar-motivo/main/mudar-motivo.user.js
 // ==/UserScript==
 
 (function () {
