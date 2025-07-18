@@ -1,14 +1,11 @@
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      5.3
-// @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6, seleciona o motivo correto e clica em Salvar automaticamente.
+// @version      6.0
+// @description  Adiciona botões para alterar automaticamente o motivo de atendimento no Integrator 6
 // @author       Você
 // @match        *://integrator6.gegnet.com.br/*
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/devluiztoledo/mudar-motivo/main/mudar-motivo.user.js
-// @downloadURL  https://raw.githubusercontent.com/devluiztoledo/mudar-motivo/main/mudar-motivo.user.js
-// @icon         https://raw.githubusercontent.com/devluiztoledo/mudar-motivo/main/icon.png
 // ==/UserScript==
 
 (function () {
@@ -20,7 +17,7 @@
         "Massiva":       "SUP - Massiva",
         "Alterar senha": "SUP - Troca /informações senha Wifi",
         "Streaming TV":  "SUP - Streaming TV",
-        "Alterar Configurações Equipamento": "SUP- Alterar Configuração equipamento",
+        "Alterar Configurações Equipamento": "SUP-  Alterar Configuração equipamento",
         "Visita técnica": "SUP - Visita técnica"
     };
 
@@ -96,7 +93,7 @@
         const campo = document.querySelector('input[formcontrolname="descri_mvis"]');
         if (!campo) return;
         let container = document.querySelector('#btn-alterar-motivo');
-        if (container) return; // já existe
+        if (container) return;
 
         container = document.createElement('div');
         container.id = 'btn-alterar-motivo';
@@ -117,4 +114,98 @@
 
 
     window.addEventListener('hashchange', () => setTimeout(inserirBotoes, 500));
+})();
+
+//Criar Atendimento
+(function() {
+    'use strict';
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    function clickItem(text) {
+        const el = Array.from(document.querySelectorAll('span.ng-star-inserted'))
+            .filter(e => e.offsetParent !== null)
+            .find(s => s.textContent.trim() === text);
+        if (el) el.click(); else console.warn(`Item '${text}' não encontrado`);
+    }
+
+    async function selectDropdown(name, label) {
+        const trigger = document.querySelector(`p-dropdown[formcontrolname="${name}"] .ui-dropdown-trigger`);
+        if (!trigger) { console.warn(`Dropdown ${name} não encontrado`); return; }
+        trigger.click(); await delay(200);
+        const option = Array.from(document.querySelectorAll('li.ui-dropdown-item'))
+            .find(li => li.getAttribute('aria-label') === label && li.offsetParent !== null);
+        if (option) option.click(); else console.warn(`Opção '${label}' no ${name} não encontrada`);
+        await delay(200);
+    }
+
+    const flows = {
+        semAcessoSuporte: async () => {
+
+            const pfSelecionado = Array.from(document.querySelectorAll('span.ng-star-inserted'))
+                .filter(e => e.offsetParent !== null)
+                .some(s => s.textContent.trim() === 'SUPORTE TÉCNICO - PF');
+            if (!pfSelecionado) {
+                clickItem('SUPORTE TÉCNICO RESIDENCIAL'); await delay(100);
+                clickItem('SUPORTE TÉCNICO - PF'); await delay(200);
+            }
+            await selectDropdown('codcatoco','Técnico');
+            await selectDropdown('codmvis','SUP - Sem conexão/Indisponibilidade');
+        },
+        semAcessoDigital: async () => {
+            await flows.semAcessoSuporte();
+            await selectDropdown('user_cargo','CSA - Digital');
+        },
+        lentidaoSuporte: async () => {
+            const pfSelecionado = Array.from(document.querySelectorAll('span.ng-star-inserted'))
+                .filter(e => e.offsetParent !== null)
+                .some(s => s.textContent.trim() === 'SUPORTE TÉCNICO - PF');
+            if (!pfSelecionado) {
+                clickItem('SUPORTE TÉCNICO RESIDENCIAL'); await delay(100);
+                clickItem('SUPORTE TÉCNICO - PF'); await delay(200);
+            }
+            await selectDropdown('codcatoco','Técnico');
+            await selectDropdown('codmvis','SUP - Lentidão');
+        },
+        lentidaoDigital: async () => {
+            await flows.lentidaoSuporte();
+            await selectDropdown('user_cargo','CSA - Digital');
+        },
+        senhaWifi: async () => {
+            const pfSelecionado = Array.from(document.querySelectorAll('span.ng-star-inserted'))
+                .filter(e => e.offsetParent !== null)
+                .some(s => s.textContent.trim() === 'SUPORTE TÉCNICO - PF');
+            if (!pfSelecionado) {
+                clickItem('SUPORTE TÉCNICO RESIDENCIAL'); await delay(100);
+                clickItem('SUPORTE TÉCNICO - PF'); await delay(200);
+            }
+            await selectDropdown('codcatoco','Técnico');
+            await selectDropdown('codmvis','SUP - Troca /informações senha Wifi');
+            await selectDropdown('user_cargo','CSA - Digital');
+        }
+    };
+
+    function createPanel() {
+        const box = document.querySelector('div.box-formulario'); if (!box || document.getElementById('tm-panel')) return;
+        const panel = document.createElement('div'); panel.id = 'tm-panel'; panel.style.cssText = 'margin:10px 0;display:flex;gap:8px';
+        const map = {
+            'Sem Acesso Suporte':'semAcessoSuporte',
+            'Sem Acesso Digital':'semAcessoDigital',
+            'Lentidão Suporte':'lentidaoSuporte',
+            'Lentidão Digital':'lentidaoDigital',
+            'Senha Wi‑Fi':'senhaWifi'
+        };
+        for (const [lbl, key] of Object.entries(map)) {
+            const btn = document.createElement('button');
+            btn.textContent = lbl;
+            btn.className = 'btn btn-primary';
+            btn.style.padding = '4px 10px';
+            btn.addEventListener('click', flows[key]);
+            panel.appendChild(btn);
+        }
+        box.prepend(panel);
+    }
+
+    new MutationObserver(createPanel).observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('hashchange', () => setTimeout(createPanel, 300));
+    setTimeout(createPanel, 500);
 })();
