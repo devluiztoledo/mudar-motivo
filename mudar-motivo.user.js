@@ -1,7 +1,8 @@
+
 // ==UserScript==
 // @name         A6 Atalho: Alterar Motivo do Atendimento + Criar Atendimento - Luiz Toledo
 // @namespace    http://tampermonkey.net/
-// @version      7.2
+// @version      7.5
 // @description  Adiciona botões para alterar motivo e painéis de criação de atendimento conforme host
 // @author       Luiz Toledo
 // @match        *://integrator6.gegnet.com.br/*
@@ -21,13 +22,13 @@
 
     //////////// ALTERAR ATENDIMENTO ////////////
     const motivos = {
-        "Lentidão":      "SUP - Lentidão",
-        "Sem acesso":    "SUP - Sem conexão/Indisponibilidade",
-        "Massiva":       "SUP - Massiva",
-        "Alterar senha": "SUP - Troca /informações senha Wifi",
-        "Streaming TV":  "SUP - Streaming TV",
-        "Alterar Configurações Equipamento": "SUP-  Alterar Configuração equipamento",
-        "Visita técnica": "SUP - Visita técnica"
+        "Lentidão":      "SUP RES - Lentidão",
+        "Sem acesso":    "SUP RES - Sem conexão/Indisponibilidade",
+        "Massiva":       "SUP RES - Massiva",
+        "Alterar senha": "SUP RES - Troca /Informações senha",
+        "Streaming TV":  "SUP RES - Streaming TV",
+        "Alterar Configurações Equipamento": "SUP RES -  Alterar Configuração equipamento",
+        "Visita técnica": "SUP RES - Visita técnica"
     };
 
     const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -51,7 +52,7 @@
     window.addEventListener('hashchange',()=>setTimeout(inserirBotoes,500));
 
     // Criar Atendimento (Gegnet)
-    if(isGegnet){ (function(){const d=ms=>new Promise(r=>setTimeout(r,ms)); function clickItem(t){const el=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).find(s=>s.textContent.trim()===t);if(el)el.click();else console.warn(`Item '${t}' não encontrado`);}async function selectDropdown(n,l){const trig=document.querySelector(`p-dropdown[formcontrolname="${n}"] .ui-dropdown-trigger`);if(!trig)return;trig.click();await d(200);const opt=Array.from(document.querySelectorAll('li.ui-dropdown-item')).find(li=>li.getAttribute('aria-label')===l&&li.offsetParent!==null);if(opt)opt.click();else console.warn(`Opção '${l}' no '${n}' não encontrada`);await d(200);}const f={semAcessoSuporte:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP - Sem conexão/Indisponibilidade');},semAcessoDigital:async()=>{await f.semAcessoSuporte();await selectDropdown('user_cargo','CSA - Digital');},lentidaoSuporte:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP - Lentidão');},lentidaoDigital:async()=>{await f.lentidaoSuporte();await selectDropdown('user_cargo','CSA - Digital');},senhaWifi:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP - Troca /informações senha Wifi');await selectDropdown('user_cargo','CSA - Digital');}};function cp(){const b=document.querySelector('div.box-formulario');if(!b||document.getElementById('tm-panel'))return;const p=document.createElement('div');p.id='tm-panel';p.style.cssText='margin:10px 0;display:flex;gap:8px';const m={'Sem Acesso Suporte':'semAcessoSuporte','Sem Acesso Digital':'semAcessoDigital','Lentidão Suporte':'lentidaoSuporte','Lentidão Digital':'lentidaoDigital','Senha Wi‑Fi':'senhaWifi'};for(const[l,k]of Object.entries(m)){const btn=document.createElement('button');btn.textContent=l;btn.className='btn btn-primary';btn.style.padding='4px 10px';btn.addEventListener('click',f[k]);p.appendChild(btn);}b.prepend(p);}new MutationObserver(cp).observe(document.body,{childList:true,subtree:true});window.addEventListener('hashchange',()=>setTimeout(cp,300));setTimeout(cp,500);})();}
+    if(isGegnet){ (function(){const d=ms=>new Promise(r=>setTimeout(r,ms)); function clickItem(t){const el=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).find(s=>s.textContent.trim()===t);if(el)el.click();else console.warn(`Item '${t}' não encontrado`);}async function selectDropdown(n,l){const trig=document.querySelector(`p-dropdown[formcontrolname="${n}"] .ui-dropdown-trigger`);if(!trig)return;trig.click();await d(200);const opt=Array.from(document.querySelectorAll('li.ui-dropdown-item')).find(li=>li.getAttribute('aria-label')===l&&li.offsetParent!==null);if(opt)opt.click();else console.warn(`Opção '${l}' no '${n}' não encontrada`);await d(200);}const f={semAcessoSuporte:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP RES - Sem conexão/Indisponibilidade');},semAcessoDigital:async()=>{await f.semAcessoSuporte();await selectDropdown('user_cargo','CSA - Digital');},lentidaoSuporte:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP RES - Lentidão');},lentidaoDigital:async()=>{await f.lentidaoSuporte();await selectDropdown('user_cargo','CSA - Digital');},senhaWifi:async()=>{const pf=Array.from(document.querySelectorAll('span.ng-star-inserted')).filter(e=>e.offsetParent!==null).some(s=>s.textContent.trim()==='SUPORTE TÉCNICO - PF');if(!pf){clickItem('SUPORTE TÉCNICO RESIDENCIAL');await d(100);clickItem('SUPORTE TÉCNICO - PF');await d(200);}await selectDropdown('codcatoco','Técnico');await selectDropdown('codmvis','SUP RES - Troca /Informações senha');await selectDropdown('user_cargo','CSA - Digital');}};function cp(){const b=document.querySelector('div.box-formulario');if(!b||document.getElementById('tm-panel'))return;const p=document.createElement('div');p.id='tm-panel';p.style.cssText='margin:10px 0;display:flex;gap:8px';const m={'Sem Acesso Suporte':'semAcessoSuporte','Sem Acesso Digital':'semAcessoDigital','Lentidão Suporte':'lentidaoSuporte','Lentidão Digital':'lentidaoDigital','Senha Wi‑Fi':'senhaWifi'};for(const[l,k]of Object.entries(m)){const btn=document.createElement('button');btn.textContent=l;btn.className='btn btn-primary';btn.style.padding='4px 10px';btn.addEventListener('click',f[k]);p.appendChild(btn);}b.prepend(p);}new MutationObserver(cp).observe(document.body,{childList:true,subtree:true});window.addEventListener('hashchange',()=>setTimeout(cp,300));setTimeout(cp,500);})();}
 
     // Criar Atendimento ( Acessoline)
     if(isAcessoLine){ (function(){
